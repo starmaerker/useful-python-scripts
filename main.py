@@ -1,16 +1,13 @@
-# This is a sample Python script.
+import subprocess
 
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# if you have problems with umlauts use decode('utf-8', errors='ignore) or another decoding
+data = subprocess.check_output(['netsh', 'wlan', 'show', 'profiles']).decode('CP850').split('\n')
+wifis = [line.split(':')[1][1:-1] for line in data if "Profil für alle Benutzer" in line]
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+for wifi in wifis:
+    results = subprocess.check_output(['netsh', 'wlan', 'show', 'profile', wifi, 'key=clear']).decode('CP850').split('\n')
+    results = [line.split(':')[1][1:-1] for line in results if "Schlüsselinhalt" in line]
+    try:
+        print(f'Name: {wifi}, Passwort: {results[0]}')
+    except IndexError:
+        print(f'Name: {wifi}, Passwort: ist nicht gespeichert')
